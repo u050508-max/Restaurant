@@ -1,0 +1,8 @@
+{
+  "name": "Gestión de Restaurante",
+  "description": "Sistema integral de gestión de restaurante para administrar mesas, comandas, facturación, personal, inventario y ventas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-mono: "Space Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Premium Elegant Dark Palette */
+  --color-slate-50: #0D0D0D;
+  --color-slate-100: #0A0A0A;
+  --color-slate-205: rgba(255, 255, 255, 0.05);
+  --color-slate-200: rgba(255, 255, 255, 0.08);
+  --color-slate-300: rgba(255, 255, 255, 0.12);
+  --color-slate-400: #A1A1AA;
+  --color-slate-500: #71717A;
+  --color-slate-600: #A1A1AA;
+  --color-slate-700: #D4D4D8;
+  --color-slate-800: #FAFAFA;
+  --color-slate-900: #121212;
+  --color-slate-950: #0F0F0F;
+  --color-white: #161616;
+
+  /* Vanguard Luxury Gold */
+  --color-amber-50: rgba(212, 175, 55, 0.08);
+  --color-amber-100: rgba(212, 175, 55, 0.15);
+  --color-amber-500: #D4AF37;
+  --color-amber-600: #8B732A;
+  --color-amber-700: #735F22;
+  --color-indigo-600: #D4AF37;
+}
+
+/* Custom Overrides to target and perfect the Vanguard vibe */
+body {
+  background-color: #0A0A0A !important;
+  color: #D4D4D8 !important;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* Base Layout Overrides */
+.bg-slate-100 {
+  background-color: #0A0A0A !important;
+}
+.bg-slate-50 {
+  background-color: #0D0D0D !important;
+}
+.bg-white {
+  background-color: #161616 !important;
+}
+.bg-slate-200 {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+.bg-slate-900 {
+  background-color: #121212 !important;
+}
+.bg-slate-950 {
+  background-color: #0F0F0F !important;
+}
+
+/* Table backgrounds */
+tr:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Text Overrides for outstanding readability */
+.text-slate-950 {
+  color: #0A0A0A !important;
+}
+.text-slate-900, .text-slate-850, .text-slate-800 {
+  color: #FAFAFA !important;
+}
+.text-slate-700 {
+  color: #D4D4D8 !important;
+}
+.text-slate-600, .text-slate-505, .text-slate-500, .text-slate-450 {
+  color: #A1A1AA !important;
+}
+.text-slate-400 {
+  color: #71717A !important;
+}
+.text-slate-300 {
+  color: #71717A !important;
+}
+
+/* Card components list hover */
+.hover\:bg-slate-50:hover, .hover\:bg-slate-100:hover {
+  background-color: rgba(212, 175, 55, 0.05) !important;
+}
+
+/* Borders */
+.border-slate-100, .border-slate-200, .border-slate-350, .border-slate-300, .border-slate-800, .border-slate-150 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Amber highlights to Luxury Gold conversion */
+.text-amber-500, .text-amber-600 {
+  color: #D4AF37 !important;
+}
+.bg-amber-500 {
+  background-color: #D4AF37 !important;
+  color: #000000 !important;
+}
+.bg-amber-600 {
+  background-color: #8B732A !important;
+  color: #ffffff !important;
+}
+.hover\:bg-amber-700:hover {
+  background-color: #D4AF37 !important;
+  color: #000000 !important;
+}
+.bg-amber-50 {
+  background-color: rgba(212, 175, 55, 0.06) !important;
+  color: #D4AF37 !important;
+}
+
+/* Sidebar Specific classes */
+aside button {
+  transition: all 0.2s ease-in-out;
+}
+aside button.bg-amber-500 {
+  background-color: #D4AF37 !important;
+  color: #0A0A0A !important;
+  font-weight: 700 !important;
+}
+
+/* Forms, input controls & select styling */
+input, textarea, select {
+  background-color: #0D0D0D !important;
+  color: #FAFAFA !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.625rem 0.875rem !important;
+  transition: border-color 0.15s ease-in-out !important;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #D4AF37 !important;
+  box-shadow: 0 0 0 1px #D4AF37 !important;
+  outline: none !important;
+}
+
+/* Clean UI items hover */
+button:hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Badge classes helper */
+.bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+.bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+}
+.bg-rose-50, .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+/* Line Charts and SVGs */
+svg text {
+  fill: #A1A1AA !important;
+}
+svg polyline, svg path {
+  stroke-linecap: round !important;
+}
+
+/* Low Stock Alert Banner */
+.bg-red-950\/20 {
+  background-color: rgba(127, 29, 29, 0.2) !important;
+}
+.border-red-500\/30 {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Header design matching command center height and color */
+header {
+  background-color: #0D0D0D !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+::-webkit-scrollbar-thumb {
+  background: #2D2D2D;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3D3D3D;
+}
