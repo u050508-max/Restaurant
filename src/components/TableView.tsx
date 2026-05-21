@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, TableStatus, Order, MenuItem, InventoryItem, StaffMember, Customer, OrderItem } from '../types';
+import { Table, TableStatus, Order, MenuItem, InventoryItem, StaffMember, Customer, OrderItem, OrderStatus } from '../types';
 import { 
   Users, 
   Plus, 
@@ -177,7 +177,7 @@ export default function TableView({
   };
 
   // Create or Update Order
-  const handleSaveOrderSubmit = (statusOverride?: 'preparando' | 'listo' | 'servido') => {
+  const handleSaveOrderSubmit = (statusOverride?: OrderStatus) => {
     if (!selectedTable) return;
     if (orderItems.length === 0) {
       setErrorMsg('Seleccione al menos un platillo del menú para levantar comanda.');
@@ -713,32 +713,75 @@ export default function TableView({
 
                   {/* Actions for placing Comanda */}
                   <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleSaveOrderSubmit()}
-                      className="w-full sm:flex-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md cursor-pointer transition-colors"
-                    >
-                      Guardar Comanda (Pendiente)
-                    </button>
-                    
-                    {selectedTable.status === 'ocupada' && (
-                      <div className="w-full sm:w-auto flex gap-1.5">
+                    {/* Waiter specific flow: can only send to chef or mark as served if ready */}
+                    {currentUserRole === 'mesero' ? (
+                      <div className="w-full flex flex-col gap-2">
+                        {(!activeOrder || activeOrder.status === 'pendiente') && (
+                          <button
+                            type="button"
+                            onClick={() => handleSaveOrderSubmit('pendiente')}
+                            className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold py-3 px-4 rounded-xl shadow-md cursor-pointer transition-all flex items-center justify-center gap-2 w-full"
+                          >
+                            <Coffee className="w-4 h-4 text-slate-100" />
+                            <span>Enviar Comanda al Chef</span>
+                          </button>
+                        )}
+                        
+                        {activeOrder && activeOrder.status === 'preparando' && (
+                          <div className="bg-amber-500/10 text-amber-600 text-xs font-bold p-3 border border-amber-500/20 rounded-xl text-center flex items-center justify-center gap-2 font-mono">
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                            <span>El Chef está preparando este pedido...</span>
+                          </div>
+                        )}
+
+                        {activeOrder && activeOrder.status === 'listo' && (
+                          <button
+                            type="button"
+                            onClick={() => handleSaveOrderSubmit('servido')}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold py-3 px-4 rounded-xl shadow-md cursor-pointer transition-colors flex items-center justify-center gap-2 w-full"
+                          >
+                            <Check className="w-4 h-4 text-slate-100" />
+                            <span>✓ Entregar a Mesa (Servido)</span>
+                          </button>
+                        )}
+
+                        {activeOrder && activeOrder.status === 'servido' && (
+                          <div className="bg-emerald-500/10 text-emerald-600 text-xs font-bold p-3 border border-emerald-500/25 rounded-xl text-center font-mono">
+                            <span>✓ Platillos Servidos. Listo para Cobrar.</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Admin / Cashier / Chef General view (unrestricted) */
+                      <div className="w-full flex-1 flex flex-col sm:flex-row items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleSaveOrderSubmit('preparando')}
-                          className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold py-3 px-3.5 rounded-xl cursor-pointer transition-colors"
-                          title="Cambiar estado a Cocinando"
+                          onClick={() => handleSaveOrderSubmit()}
+                          className="w-full sm:flex-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md cursor-pointer transition-colors"
                         >
-                          Mandarse a Preparar (Cocina)
+                          Guardar Comanda (Pendiente)
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSaveOrderSubmit('listo')}
-                          className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-3 px-3.5 rounded-xl cursor-pointer transition-colors"
-                          title="Cambiar estado a Para Servir"
-                        >
-                          Listo Para Servir
-                        </button>
+                        
+                        {selectedTable.status === 'ocupada' && (
+                          <div className="w-full sm:w-auto flex gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleSaveOrderSubmit('preparando')}
+                              className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold py-3 px-3.5 rounded-xl cursor-pointer transition-colors"
+                              title="Cambiar estado a Cocinando"
+                            >
+                              Mandarse a Preparar (Cocina)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveOrderSubmit('listo')}
+                              className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-3 px-3.5 rounded-xl cursor-pointer transition-colors"
+                              title="Cambiar estado a Para Servir"
+                            >
+                              Listo Para Servir
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

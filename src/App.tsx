@@ -34,6 +34,7 @@ import InventoryView from './components/InventoryView';
 import StaffView from './components/StaffView';
 import ClientView from './components/ClientView';
 import LoginScreen from './components/LoginScreen';
+import KitchenMonitor from './components/KitchenMonitor';
 
 export default function App() {
   // Navigation active tab
@@ -238,6 +239,11 @@ export default function App() {
     saveTablesState(updatedTables);
   };
 
+  const handleUpdateOrderStatus = (orderId: string, status: any) => {
+    const updated = orders.map(o => o.id === orderId ? { ...o, status } : o);
+    saveOrdersState(updated);
+  };
+
   // CLOSE ORDER & CASH OUT & DEDUCT REAL INVENTORY RECIPE
   const handleCloseOrder = (orderId: string, paymentMethod: 'efectivo' | 'tarjeta' | 'transferencia', tip: number) => {
     const orderObj = orders.find(o => o.id === orderId);
@@ -371,15 +377,19 @@ export default function App() {
   const sidebarLinks = [
     { id: 'inicio', label: 'Inicio', icon: LineChart },
     { id: 'mesas', label: 'Salón & POS', icon: TableIcon },
+    { id: 'cocina', label: 'Cocina (Monitor)', icon: ChefHat },
     { id: 'menu', label: 'Menú & Recetario', icon: Utensils },
     { id: 'inventario', label: 'Almacén', icon: Package },
-    { id: 'personal', label: 'Personal (Equipo)', icon: ChefHat },
+    { id: 'personal', label: 'Personal (Equipo)', icon: Users },
     { id: 'clientes', label: 'Clientes Loyal', icon: FolderHeart },
   ];
 
   const visibleSidebarLinks = sidebarLinks.filter(link => {
     if (currentUser?.role === 'mesero') {
       return link.id === 'mesas';
+    }
+    if (currentUser?.role === 'chef') {
+      return link.id === 'cocina' || link.id === 'menu';
     }
     return true;
   });
@@ -393,6 +403,8 @@ export default function App() {
           localStorage.setItem('sgr_current_user', JSON.stringify(member));
           if (member.role === 'mesero') {
             setActiveTab('mesas');
+          } else if (member.role === 'chef') {
+            setActiveTab('cocina');
           } else {
             setActiveTab('inicio');
           }
@@ -630,6 +642,16 @@ export default function App() {
                   onSaveOrder={handleSaveOrder}
                   onCloseOrder={handleCloseOrder}
                   currentUserRole={currentUser?.role}
+                />
+              )}
+
+              {activeTab === 'cocina' && (
+                <KitchenMonitor 
+                  orders={orders}
+                  menuItems={menuItems}
+                  staff={staff}
+                  onUpdateOrderStatus={handleUpdateOrderStatus}
+                  currentUser={currentUser}
                 />
               )}
 
