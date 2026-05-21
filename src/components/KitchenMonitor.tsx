@@ -15,7 +15,8 @@ import {
   BellRing,
   UtensilsCrossed,
   Hourglass,
-  ArrowRight
+  ArrowRight,
+  Bot
 } from 'lucide-react';
 
 interface KitchenMonitorProps {
@@ -24,6 +25,8 @@ interface KitchenMonitorProps {
   staff: StaffMember[];
   onUpdateOrderStatus: (orderId: string, status: OrderStatus) => void;
   currentUser?: StaffMember | null;
+  autoPilot?: boolean;
+  onToggleAutoPilot?: () => void;
 }
 
 export default function KitchenMonitor({
@@ -31,7 +34,9 @@ export default function KitchenMonitor({
   menuItems,
   staff,
   onUpdateOrderStatus,
-  currentUser
+  currentUser,
+  autoPilot,
+  onToggleAutoPilot
 }: KitchenMonitorProps) {
   const [filterChefId, setFilterChefId] = useState<string>('todos');
   const [activeTab, setActiveTab] = useState<'cola' | 'preparando' | 'completas'>('cola');
@@ -151,6 +156,49 @@ export default function KitchenMonitor({
             </div>
           </div>
           <span className="text-[10px] bg-slate-950/20 px-2 py-0.5 rounded font-mono font-black">ENTRANTE</span>
+        </div>
+      )}
+
+      {/* Explicación de Automatización / Autopilot */}
+      {autoPilot ? (
+        <div className="bg-slate-900 border border-slate-800 text-slate-100 p-4 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3.5 text-left">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
+              <Bot className="w-5 h-5 animate-bounce" />
+            </div>
+            <div>
+              <p className="font-extrabold text-xs text-amber-500 tracking-wider">CHEF VIRTUAL AUTOMÁTICO EN LINEA (AUTO-PILOT)</p>
+              <p className="text-xs text-slate-350 leading-relaxed">
+                ¡Visualiza el flujo sin cambiar de cuenta! Cuando el mesero toma la orden, la cocina la recibe en automático. Pasa a <span className="text-amber-500 font-bold">"Preparando"</span> en 5 segundos, y luego a <span className="text-purple-400 font-bold">"Listo"</span> en 10 segundos para devolvérsela al mesero.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onToggleAutoPilot}
+            className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-750 font-bold px-3.5 py-1.5 rounded-xl transition-all font-mono whitespace-nowrap cursor-pointer hover:border-slate-600 shrink-0"
+          >
+            Cambiar a Manual
+          </button>
+        </div>
+      ) : (
+        <div className="bg-slate-50 border border-slate-150 text-slate-600 p-4 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 text-left">
+            <div className="w-10 h-10 rounded-2xl bg-slate-200/60 border border-slate-300/50 flex items-center justify-center text-slate-500 shrink-0">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-extrabold text-xs text-slate-700 tracking-wider font-mono">CHEF VIRTUAL APAGADO (MODO MANUAL)</p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                El sistema de cocina está en modo manual. Tú (o un usuario con rol de chef) deben venir a esta pantalla para iniciar la cocción y mandar los platillos listos manualmente al mesero.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onToggleAutoPilot}
+            className="text-[10px] bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl transition-all font-mono whitespace-nowrap cursor-pointer shrink-0"
+          >
+            Activar Chef Virtual
+          </button>
         </div>
       )}
 

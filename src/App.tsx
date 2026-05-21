@@ -13,7 +13,10 @@ import {
   Compass,
   Menu as Hamburger,
   ChevronLeft,
-  DollarSign
+  DollarSign,
+  Bot,
+  Zap,
+  Check
 } from 'lucide-react';
 
 import { Table, TableStatus, Order, MenuItem, InventoryItem, StaffMember, Customer } from './types';
@@ -50,6 +53,16 @@ export default function App() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+
+  // Simulator/Piloto Automático de Cocina (Chef Virtual)
+  const [autoPilot, setAutoPilot] = useState<boolean>(() => {
+    const saved = localStorage.getItem('sgr_auto_pilot');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sgr_auto_pilot', String(autoPilot));
+  }, [autoPilot]);
 
   // Time tracker state
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -172,6 +185,53 @@ export default function App() {
     setOrders(updated);
     localStorage.setItem('sgr_orders', JSON.stringify(updated));
   };
+
+  // Motor de Automatización en Segundo Plano (Rol de Cocina Sincrónico)
+  useEffect(() => {
+    if (!autoPilot) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      let changed = false;
+
+      const updatedOrders = orders.map(order => {
+        // A. Si la comanda es enviada por el mesero y está 'pendiente',
+        // el Chef Virtual la toma de inmediato y la cambia a 'preparando' tras 5 segundos.
+        if (order.status === 'pendiente') {
+          const secs = (now - new Date(order.createdAt).getTime()) / 1000;
+          if (secs >= 5) {
+            changed = true;
+            const chefs = staff.filter(s => s.role === 'chef' && s.status === 'activo');
+            const randomChefId = chefs.length > 0 ? chefs[Math.floor(Math.random() * chefs.length)].id : undefined;
+            return {
+              ...order,
+              status: 'preparando' as const,
+              chefId: order.chefId || randomChefId
+            };
+          }
+        }
+        // B. Tras 10 segundos adicionales cocinando, el Chef la termina
+        // y se la manda en automático al mesero listando su estatus como 'listo'.
+        if (order.status === 'preparando') {
+          const secs = (now - new Date(order.createdAt).getTime()) / 1000;
+          if (secs >= 15) {
+            changed = true;
+            return {
+              ...order,
+              status: 'listo' as const
+            };
+          }
+        }
+        return order;
+      });
+
+      if (changed) {
+        saveOrdersState(updatedOrders);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [autoPilot, orders, staff]);
 
   // 3. Operational State Mutators
   
@@ -589,6 +649,21 @@ export default function App() {
               </span>
             </div>
 
+            {/* Piloto Automático de Cocina (Chef Virtual) */}
+            <button
+              onClick={() => setAutoPilot(!autoPilot)}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border text-[11px] font-bold tracking-tight transition-all cursor-pointer ${
+                autoPilot 
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 shadow-xs shadow-amber-500/5' 
+                  : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300'
+              }`}
+              title={autoPilot ? "Desmarcar para controlar los tickets manualmente" : "Picar aquí para automatizar la simulación de cocina!"}
+            >
+              <Bot className={`w-4 h-4 ${autoPilot ? 'animate-bounce text-amber-500' : ''}`} />
+              <span>Chef Virtual: {autoPilot ? 'Activo' : 'Manual'}</span>
+              <span className={`w-2 h-2 rounded-full ${autoPilot ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
+            </button>
+
             {/* Quick staff session card */}
             <div className="flex items-center gap-2 border-l border-slate-200 pl-4 text-xs font-semibold text-slate-600">
               <div className="text-right">
@@ -652,6 +727,8 @@ export default function App() {
                   staff={staff}
                   onUpdateOrderStatus={handleUpdateOrderStatus}
                   currentUser={currentUser}
+                  autoPilot={autoPilot}
+                  onToggleAutoPilot={() => setAutoPilot(!autoPilot)}
                 />
               )}
 
