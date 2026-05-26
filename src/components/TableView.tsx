@@ -78,6 +78,33 @@ export default function TableView({
   // Error/Success state alert in Builder
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Notificación en tiempo real para el mesero cuando la cocina deja platillos listos
+  const [lastReadyOrderCount, setLastReadyOrderCount] = useState<number>(() => {
+    return orders.filter(o => o.status === 'listo').length;
+  });
+  const [waiterToast, setWaiterToast] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const readyOrders = orders.filter(o => o.status === 'listo');
+    // Si la cantidad de pedidos listos aumentó, mandamos la comanda directo a su pantalla
+    if (readyOrders.length > lastReadyOrderCount) {
+      const newestReady = readyOrders[readyOrders.length - 1];
+      setWaiterToast(`🔔 ¡Atención! El Chef terminó la comanda de la ${newestReady.tableName}. ¡Lleva los platillos listos antes de que se enfríen!`);
+      // Simulamos campana sonora con volumen sutil visual
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        try {
+          const utterance = new SpeechSynthesisUtterance(`Platillo listo para ${newestReady.tableName}`);
+          utterance.lang = 'es-MX';
+          utterance.rate = 1.1;
+          window.speechSynthesis.speak(utterance);
+        } catch (err) {
+          // Fallback silencioso sin errorear el hilo de ejecución principal
+        }
+      }
+    }
+    setLastReadyOrderCount(readyOrders.length);
+  }, [orders]);
+
   // Find active order of selected table
   const activeOrder = selectedTable && selectedTable.currentOrderId 
     ? orders.find(o => o.id === selectedTable.currentOrderId) 
@@ -282,6 +309,26 @@ export default function TableView({
 
   return (
     <div className="space-y-6">
+      {/* Toaster interactivo en tiempo real para avisos al mesero */}
+      {waiterToast && (
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-2xl p-4.5 shadow-xl border border-purple-400/30 flex items-center justify-between gap-4 animate-bounce">
+          <div className="flex items-center gap-3 text-left">
+            <span className="text-2xl animate-spin shrink-0">🔔</span>
+            <div>
+              <p className="font-extrabold text-xs text-amber-300 uppercase tracking-widest">PEDIDO LISTO EN BARRA</p>
+              <p className="text-xs font-medium text-slate-100 mt-0.5">{waiterToast}</p>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setWaiterToast(null)} 
+            className="text-[10px] bg-white text-slate-900 hover:bg-slate-100 font-bold px-3 py-1.5 rounded-xl shrink-0 cursor-pointer shadow-xs transition-colors"
+          >
+            Entendido, voy por él
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-50 pb-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800">Salón & Comandas</h2>
@@ -355,6 +402,99 @@ export default function TableView({
             </button>
           </div>
         </form>
+      )}
+
+      {/* PANEL DE PLATILLOS LISTOS EN BARRA (AVISO AL MESERO) */}
+      {orders.filter(o => o.status === 'listo').length > 0 && (
+        <div className="bg-gradient-to-r from-purple-900 via-indigo-950 to-purple-950 border-2 border-purple-500/30 text-white rounded-3xl p-5 shadow-2xl animate-pulse-slow space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-500/20 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center animate-bounce">
+                <Coffee className="w-5.5 h-5.5" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-extrabold text-sm tracking-wide text-amber-300 flex items-center gap-1.5">
+                  <span>¡ESTACIÓN DE PLATILLOS TERMINADOS!</span>
+                  <span className="text-[10px] bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full font-black animate-pulse">RECOGER EN BARRA</span>
+                </h4>
+                <p className="text-xs text-slate-350">La cocina ha liberado los siguientes pedidos. Por favor, llévalos caliente a los comensales:</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] font-mono bg-purple-800 text-purple-200 px-2.5 py-1 rounded-md font-bold">
+                {orders.filter(o => o.status === 'listo').length} Comanda(s) por Repartir
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {orders.filter(o => o.status === 'listo').map((order) => {
+              const waiterMatch = staff.find(s => s.id === order.waiterId);
+              return (
+                <div 
+                  key={order.id} 
+                  className="bg-slate-900/85 border border-purple-500/25 rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:border-purple-400 transition-all text-left"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[9px] font-bold text-purple-300 font-mono uppercase tracking-widest block">Ubicación física</span>
+                      <strong className="text-base font-black text-white">{order.tableName}</strong>
+                    </div>
+                    
+                    <span className="text-[10px] bg-purple-500 text-white font-mono font-bold px-2 py-0.5 rounded-md animate-pulse">
+                      ¡URGENTE!
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 border-t border-slate-800/80 pt-2 text-xs">
+                    <span className="text-[9.5px] font-bold text-slate-450 uppercase tracking-wider block font-mono text-slate-400">Insumos a colocar:</span>
+                    <div className="space-y-1 max-h-[100px] overflow-y-auto pr-1">
+                      {order.items.map((it, idx) => {
+                        const menuItemObj = menuItems.find(m => m.id === it.menuItemId);
+                        return (
+                          <div key={idx} className="flex items-center gap-2 font-mono text-[11px] text-slate-200">
+                            <span className="w-5 h-5 bg-slate-800 text-amber-400 font-black rounded-md flex items-center justify-center text-[10px]">
+                              {it.quantity}x
+                            </span>
+                            <span className="truncate flex-1">{menuItemObj?.name || 'Insumo culinario'}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="text-[10px] text-slate-400 border-t border-slate-800/60 pt-2 flex items-center justify-between">
+                    <span>Atendió: <strong className="text-slate-300 font-mono">{waiterMatch?.name || 'Mesero General'}</strong></span>
+                    <span className="text-[9px] text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">Listo para entrega</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updatedOrder: Order = {
+                        ...order,
+                        status: 'servido'
+                      };
+                      onSaveOrder(updatedOrder);
+                      
+                      // Auto select that table to highlight focus in terminal
+                      const matchedTable = tables.find(t => t.id === order.tableId);
+                      if (matchedTable) {
+                        handleSelectTable(matchedTable);
+                      }
+                      setErrorMsg('✓ Comanda marcada como entregada físicamente a comensales.');
+                      setTimeout(() => setErrorMsg(''), 3500);
+                    }}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl shadow-md cursor-pointer transition-all flex items-center justify-center gap-1.5 select-none"
+                  >
+                    <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                    <span>Marcar como Entregado en Mesa</span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* Main Split Layout: Left: Salon Map. Right: POS Tablet or Checkout */}
